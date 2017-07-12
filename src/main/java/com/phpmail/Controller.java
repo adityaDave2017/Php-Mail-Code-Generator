@@ -1,11 +1,11 @@
 package com.phpmail;
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+
+import java.util.Optional;
 
 
 @SuppressWarnings({"unused"})
@@ -13,24 +13,34 @@ public class Controller {
 
     @FXML
     public Button btnAddField;
+
     @FXML
     private TextField txtFieldEmailTo;
+
     @FXML
     private TextField txtFieldEmailSubject;
+
     @FXML
     private TextField txtFieldLogoUrl;
+
     @FXML
     private TextField txtFieldHomePage;
+
     @FXML
     private TextField txtFieldGreetings;
+
     @FXML
     private TextField txtFieldFromText;
+
     @FXML
     private TextField txtFieldSuccessUrl;
+
     @FXML
     private TextField txtFieldFailureUrl;
+
     @FXML
     private ListView<Field> lvFields;
+
     @FXML
     private TextField txtFieldDisplayName;
 
@@ -46,24 +56,18 @@ public class Controller {
     @FXML
     private MenuItem menuItemAbout;
 
+    @FXML
+    private Button btnClear;
+
 
     @FXML
     public void initialize() {
 
-        txtFieldDisplayName.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                txtFieldDisplayName.setStyle(null);
-            }
-        });
+        Platform.runLater(() -> (txtFieldDisplayName.getScene()).getRoot().requestFocus());
 
+        txtFieldDisplayName.textProperty().addListener((observable, oldValue, newValue) -> txtFieldDisplayName.setStyle(null));
 
-        txtFieldFormFieldName.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                txtFieldFormFieldName.setStyle(null);
-            }
-        });
+        txtFieldFormFieldName.textProperty().addListener((observable, oldValue, newValue) -> txtFieldFormFieldName.setStyle(null));
 
     }
 
@@ -108,20 +112,54 @@ public class Controller {
 
         // Todo: create and save file on different thread
 
+        System.out.println(lvFields.getItems());
         System.out.println("File Created...!");
     }
 
 
     public void aboutClicked() {
-        System.out.println("Application to help designers. \u00A9 Aditya Dave.");
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setGraphic(null);
+        alert.setHeaderText(null);
+        alert.setContentText("Application to help designers.\n\u00A9 Aditya Dave.");
+        alert.show();
     }
 
 
     public void closeClicked() {
-        // Todo: Look for unsaved work
+        if (lvFields.getItems().size() != 0) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.getButtonTypes().setAll(ButtonType.NO, ButtonType.YES);
+            alert.setContentText("Do you want to save before exit?");
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.YES) {
+                generatePhpCode();
+            }
+            lvFields.getItems().clear();
+            Platform.exit();
+        } else {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.getButtonTypes().setAll(ButtonType.NO, ButtonType.YES);
+            alert.setContentText("Do you really want to exit?");
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.YES) {
+                Platform.exit();
+            }
+        }
+    }
 
-        // afterwards exit
-        Platform.exit();
+
+    public void clearClicked() {
+        txtFieldDisplayName.clear();
+        txtFieldFormFieldName.clear();
+        txtFieldEmailSubject.clear();
+        txtFieldEmailTo.clear();
+        txtFieldFailureUrl.clear();
+        txtFieldFromText.clear();
+        txtFieldGreetings.clear();
+        txtFieldHomePage.clear();
+        txtFieldLogoUrl.clear();
+        txtFieldSuccessUrl.clear();
     }
 
 
