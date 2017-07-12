@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.input.KeyCodeCombination?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" minHeight="680" minWidth="800" xmlns="http://javafx.com/javafx/8.0.131"
+            fx:controller="com.phpmail.Controller">
+    <left>
+        <VBox alignment="TOP_CENTER" prefHeight="549.0" prefWidth="248.0" spacing="5.0">
+            <TextField fx:id="txtFieldEmailTo" promptText="Email To...">
+                <VBox.margin>
+                    <Insets bottom="5.0" left="5.0" right="5.0" top="20.0"/>
+                </VBox.margin>
+                <padding>
+                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                </padding>
+            </TextField>
+            <TextField fx:id="txtFieldEmailSubject" promptText="Email Subject...">
+                <VBox.margin>
+                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                </VBox.margin>
+            </TextField>
+            <TextField fx:id="txtFieldLogoUrl" promptText="Company Logo URL...">
+                <VBox.margin>
+                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                </VBox.margin>
+            </TextField>
+            <TextField fx:id="txtFieldHomePage" promptText="Company Home Page URL...">
+                <VBox.margin>
+                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                </VBox.margin>
+            </TextField>
+            <TextField fx:id="txtFieldGreetings" promptText="Greetings text...">
+                <VBox.margin>
+                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                </VBox.margin>
+            </TextField>
+            <TextField fx:id="txtFieldFromText" promptText="From text...">
+                <VBox.margin>
+                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                </VBox.margin>
+            </TextField>
+            <TextField fx:id="txtFieldSuccessUrl" promptText="On Success Redirect URL...">
+                <VBox.margin>
+                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                </VBox.margin>
+            </TextField>
+            <TextField fx:id="txtFieldFailureUrl" promptText="On Failure Redirect URL...">
+                <VBox.margin>
+                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                </VBox.margin>
+            </TextField>
+            <BorderPane.margin>
+                <Insets bottom="10.0"/>
+            </BorderPane.margin>
+        </VBox>
+    </left>
+    <center>
+        <VBox>
+            <ListView fx:id="lvFields" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER"
+                      VBox.vgrow="ALWAYS">
+                <VBox.margin>
+                    <Insets bottom="10.0" left="5.0" right="10.0" top="20.0"/>
+                </VBox.margin>
+            </ListView>
+            <HBox spacing="10.0" VBox.vgrow="NEVER">
+                <TextField fx:id="txtFieldDisplayName" prefHeight="30.0" prefWidth="184.0" promptText="Display Name..."
+                           HBox.hgrow="ALWAYS">
+                    <HBox.margin>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+                    </HBox.margin>
+                </TextField>
+                <TextField fx:id="txtFieldFormFieldName" prefHeight="30.0" prefWidth="184.0"
+                           promptText="Form Field Name..." HBox.hgrow="ALWAYS">
+                    <HBox.margin>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+                    </HBox.margin>
+                </TextField>
+                <Button fx:id="btnAddField" alignment="TOP_CENTER" mnemonicParsing="false" onMouseClicked="#addField"
+                        text="Add" HBox.hgrow="ALWAYS">
+                    <HBox.margin>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+                    </HBox.margin>
+                </Button>
+                <BorderPane.margin>
+                    <Insets left="275.0"/>
+                </BorderPane.margin>
+                <VBox.margin>
+                    <Insets bottom="10.0"/>
+                </VBox.margin>
+            </HBox>
+        </VBox>
+    </center>
+    <top>
+        <MenuBar BorderPane.alignment="CENTER">
+            <Menu mnemonicParsing="false" text="_File">
+                <MenuItem fx:id="menuItemGeneratePhp" onAction="#generatePhpCode" text="_Generate PHP">
+                    <accelerator>
+                        <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                    </accelerator>
+                </MenuItem>
+                <MenuItem fx:id="menuItemClose" mnemonicParsing="false" onAction="#closeClicked" text="Close">
+                    <accelerator>
+                        <KeyCodeCombination alt="DOWN" code="F4" control="UP" meta="UP" shift="UP" shortcut="UP"/>
+                    </accelerator>
+                </MenuItem>
+            </Menu>
+            <Menu mnemonicParsing="false" text="_Help">
+                <MenuItem fx:id="menuItemAbout" onAction="#aboutClicked" text="_About"/>
+            </Menu>
+        </MenuBar>
+    </top>
+</BorderPane>
