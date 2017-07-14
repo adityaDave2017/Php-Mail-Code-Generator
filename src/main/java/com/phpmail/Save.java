@@ -1,12 +1,15 @@
 package com.phpmail;
 
 import com.google.gson.Gson;
+import com.phpmail.pojo.EmailData;
+import com.phpmail.pojo.Field;
+import com.phpmail.pojo.FormatTemplate;
 import javafx.collections.ObservableList;
 
 import java.io.*;
 
 
-class Util {
+class Save {
 
 
     private static FormatTemplate loadTemplate(File location) throws IOException {

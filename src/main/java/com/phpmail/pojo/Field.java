@@ -1,7 +1,7 @@
-package com.phpmail;
-
+package com.phpmail.pojo;
 
 import org.jetbrains.annotations.NotNull;
+
 
 public class Field implements Comparable<Field> {
 

@@ -1,7 +1,7 @@
-package com.phpmail;
-
+package com.phpmail.pojo;
 
 import com.google.gson.annotations.SerializedName;
+
 
 public class FormatTemplate {
 

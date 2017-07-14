@@ -1,7 +1,7 @@
-package com.phpmail;
+package com.phpmail.pojo;
 
 
-class EmailData {
+public class EmailData {
 
     private String emailTo;
     private String emailSubject;

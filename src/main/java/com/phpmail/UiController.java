@@ -1,5 +1,7 @@
 package com.phpmail;
 
+import com.phpmail.pojo.EmailData;
+import com.phpmail.pojo.Field;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -70,23 +72,38 @@ public class UiController {
             (txtFieldDisplayName.getScene()).getRoot().requestFocus();
             Stage primaryStage = (Stage) txtFieldSelectTemplate.getScene().getWindow();
             primaryStage.setOnCloseRequest(event -> {
-                if (lvFields.getItems().size() != 0) {
-                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                    alert.getButtonTypes().addAll(ButtonType.NO, ButtonType.YES);
+                boolean trouble = false;
+                for (Node node : vBoxContainer.getChildren()) {
+                    if (node instanceof TextField && !((TextField) node).getText().isEmpty()) {
+                        node.setStyle("-fx-border-color: red");
+                        trouble = true;
+                    }
+                }
+
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setHeaderText(null);
+                alert.getButtonTypes().clear();
+                alert.getButtonTypes().setAll(ButtonType.NO, ButtonType.YES);
+                if (lvFields.getItems().size() != 0 || trouble) {
                     alert.setContentText("Do you want to save before exit?");
                     Optional<ButtonType> result = alert.showAndWait();
                     if (result.isPresent() && result.get() == ButtonType.YES) {
-                        generatePhpCode();
+                        try {
+                            if (!generatePhpCode()) {
+                                Alert error = new Alert(Alert.AlertType.ERROR);
+                                error.setContentText("Nothing to Save!");
+                                error.setHeaderText(null);
+                                error.showAndWait();
+                            }
+                        } catch (InterruptedException exc) {
+                            exc.printStackTrace();
+                        }
                     }
-                    lvFields.getItems().clear();
-                    Platform.exit();
                 } else {
-                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                    alert.getButtonTypes().setAll(ButtonType.NO, ButtonType.YES);
                     alert.setContentText("Do you really want to exit?");
                     Optional<ButtonType> result = alert.showAndWait();
-                    if (result.isPresent() && result.get() == ButtonType.YES) {
-                        Platform.exit();
+                    if (result.isPresent() && result.get() == ButtonType.NO) {
+                        event.consume();
                     }
                 }
             });
@@ -108,7 +125,20 @@ public class UiController {
 
         txtFieldFailureUrl.textProperty().addListener((observable, oldValue, newValue) -> txtFieldFailureUrl.setStyle(null));
 
-        txtFieldEmailTo.textProperty().addListener((observable, oldValue, newValue) -> txtFieldEmailTo.setStyle(null));
+        txtFieldEmailTo.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.isEmpty()) {
+                for (String emailId : newValue.split(",")) {
+                    if (!emailId.matches("[\\w.\\d]+@(\\w)+\\.(\\w)+")) {
+                        txtFieldEmailTo.setStyle("-fx-border-color: red");
+                        break;
+                    } else {
+                        txtFieldEmailTo.setStyle(null);
+                    }
+                }
+            } else {
+                txtFieldEmailTo.setStyle(null);
+            }
+        });
 
         txtFieldEmailSubject.textProperty().addListener((observable, oldValue, newValue) -> txtFieldEmailSubject.setStyle(null));
 
@@ -160,63 +190,61 @@ public class UiController {
         }
 
         lvFields.getItems().add(newField);
+        txtFieldDisplayName.clear();
+        txtFieldFormFieldName.clear();
     }
 
 
     @FXML
-    public void generatePhpCode() {
+    public boolean generatePhpCode() throws InterruptedException {
 
         if (lvFields.getItems().size() == 0) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setHeaderText(null);
-            alert.setContentText("Nothing to save!");
-            alert.show();
-            return;
+            return false;
         }
 
-        boolean trouble = false;
         for (Node node : vBoxContainer.getChildren()) {
             if (node instanceof TextField && ((TextField) node).getText().isEmpty()) {
                 node.setStyle("-fx-border-color: red");
-                trouble = true;
+                return false;
             }
         }
 
-        if (trouble) {
-            return;
-        }
+        Thread saver = new Thread(() -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save File");
+            FileChooser.ExtensionFilter extensionFilter = new FileChooser.ExtensionFilter("PHP files (*.php)", "*.php");
+            fileChooser.getExtensionFilters().add(extensionFilter);
+            File saveFile = fileChooser.showSaveDialog(null);
 
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save File");
-        FileChooser.ExtensionFilter extensionFilter = new FileChooser.ExtensionFilter("PHP files (*.php)", "*.php");
-        fileChooser.getExtensionFilters().add(extensionFilter);
-        File saveFile = fileChooser.showSaveDialog(null);
+            if (saveFile != null) {
 
-        if (saveFile != null) {
+                if (!saveFile.getName().endsWith(".php")) {
+                    saveFile = new File(saveFile.getAbsolutePath() + ".php");
+                }
 
-            if (!saveFile.getName().endsWith(".php")) {
-                saveFile = new File(saveFile.getAbsolutePath() + ".php");
+                EmailData data = new EmailData();
+                data.setEmailTo(txtFieldEmailTo.getText());
+                data.setEmailSubject(txtFieldEmailSubject.getText());
+                data.setCompanyLogoUrl(txtFieldLogoUrl.getText());
+                data.setCompanyHomePage(txtFieldHomePage.getText());
+                data.setGreetingsText(txtFieldGreetings.getText());
+                data.setFromText(txtFieldFromText.getText());
+                data.setSuccessUrl(txtFieldSuccessUrl.getText());
+                data.setFailureUrl(txtFieldFailureUrl.getText());
+
+                Save.generatePhp(templateFile, saveFile, data, lvFields.getItems());
             }
+        });
 
-            EmailData data = new EmailData();
-            data.setEmailTo(txtFieldEmailTo.getText());
-            data.setEmailSubject(txtFieldEmailSubject.getText());
-            data.setCompanyLogoUrl(txtFieldLogoUrl.getText());
-            data.setCompanyHomePage(txtFieldHomePage.getText());
-            data.setGreetingsText(txtFieldGreetings.getText());
-            data.setFromText(txtFieldFromText.getText());
-            data.setSuccessUrl(txtFieldSuccessUrl.getText());
-            data.setFailureUrl(txtFieldFailureUrl.getText());
-
-            Util.generatePhp(templateFile, saveFile, data, lvFields.getItems());
-        }
-
+        saver.join();
+        return true;
     }
 
 
     @FXML
     public void aboutClicked() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("About");
         alert.setGraphic(null);
         alert.setHeaderText(null);
         alert.setContentText("Application to help designers.\n\u00A9 Aditya Dave.");
@@ -226,19 +254,36 @@ public class UiController {
 
     @FXML
     public void closeClicked() {
-        if (lvFields.getItems().size() != 0) {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.getButtonTypes().addAll(ButtonType.NO, ButtonType.YES);
+        boolean trouble = false;
+        for (Node node : vBoxContainer.getChildren()) {
+            if (node instanceof TextField && !((TextField) node).getText().isEmpty()) {
+                node.setStyle("-fx-border-color: red");
+                trouble = true;
+            }
+        }
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setHeaderText(null);
+        alert.getButtonTypes().clear();
+        alert.getButtonTypes().setAll(ButtonType.NO, ButtonType.YES);
+        if (lvFields.getItems().size() != 0 || trouble) {
             alert.setContentText("Do you want to save before exit?");
             Optional<ButtonType> result = alert.showAndWait();
             if (result.isPresent() && result.get() == ButtonType.YES) {
-                generatePhpCode();
+                try {
+                    if (!generatePhpCode()) {
+                        Alert error = new Alert(Alert.AlertType.ERROR);
+                        error.setContentText("Nothing to Save!");
+                        error.setHeaderText(null);
+                        error.showAndWait();
+                    }
+                } catch (InterruptedException exc) {
+                    exc.printStackTrace();
+                }
             }
             lvFields.getItems().clear();
             Platform.exit();
         } else {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.getButtonTypes().setAll(ButtonType.NO, ButtonType.YES);
             alert.setContentText("Do you really want to exit?");
             Optional<ButtonType> result = alert.showAndWait();
             if (result.isPresent() && result.get() == ButtonType.YES) {
@@ -254,7 +299,6 @@ public class UiController {
         boolean trouble = false;
         for (Node node : vBoxContainer.getChildren()) {
             if (node instanceof TextField && !((TextField) node).getText().isEmpty()) {
-                node.setStyle("-fx-border-color: red");
                 trouble = true;
             }
         }
@@ -269,7 +313,16 @@ public class UiController {
             Optional<ButtonType> result = alert.showAndWait();
 
             if (result.isPresent() && result.get() == ButtonType.YES) {
-                generatePhpCode();
+                try {
+                    if (!generatePhpCode()) {
+                        Alert error = new Alert(Alert.AlertType.ERROR);
+                        error.setContentText("Nothing to Save!");
+                        error.setHeaderText(null);
+                        error.showAndWait();
+                    }
+                } catch (InterruptedException exc) {
+                    exc.printStackTrace();
+                }
             }
         }
 
