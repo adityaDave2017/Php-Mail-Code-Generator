@@ -39,12 +39,11 @@ public class Field implements Comparable<Field> {
 
     @Override
     public String toString() {
-        return toPhpVariable();
-        /*return "Field{" +
+        return "Field{" +
                 "formFieldName='" + formFieldName + '\'' +
                 ", displayName='" + displayName + '\'' +
                 ", isOptional=" + isOptional +
-                '}';*/
+                '}';
     }
 
     @Override

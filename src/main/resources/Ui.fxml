@@ -5,9 +5,9 @@
 <?import javafx.scene.input.KeyCodeCombination?>
 <?import javafx.scene.layout.*?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" minHeight="680" minWidth="800" xmlns="http://javafx.com/javafx/8.0.131"
-            fx:controller="com.phpmail.Controller">
+            fx:controller="com.phpmail.UiController">
     <left>
-        <VBox alignment="TOP_CENTER" prefHeight="549.0" prefWidth="248.0" spacing="5.0">
+        <VBox fx:id="vBoxContainer" alignment="TOP_CENTER" prefHeight="549.0" prefWidth="248.0" spacing="5.0">
             <TextField fx:id="txtFieldEmailTo" promptText="Email To...">
                 <VBox.margin>
                     <Insets bottom="5.0" left="5.0" right="5.0" top="20.0"/>
@@ -51,8 +51,17 @@
                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                 </VBox.margin>
             </TextField>
-            <Button fx:id="btnClear" onMouseClicked="#clearClicked" alignment="CENTER" mnemonicParsing="false"
-                    text="Clear" textAlignment="CENTER"/>
+            <TextField fx:id="txtFieldSelectTemplate" onMouseClicked="#selectTemplate" promptText="Select template...">
+                <VBox.margin>
+                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                </VBox.margin>
+            </TextField>
+            <Button fx:id="btnClear" alignment="BOTTOM_CENTER" mnemonicParsing="false" onMouseClicked="#clearClicked"
+                    text="Clear" textAlignment="CENTER">
+                <VBox.margin>
+                    <Insets top="20.0"/>
+                </VBox.margin>
+            </Button>
             <BorderPane.margin>
                 <Insets bottom="10.0"/>
             </BorderPane.margin>
@@ -97,6 +106,11 @@
     <top>
         <MenuBar BorderPane.alignment="CENTER">
             <Menu mnemonicParsing="false" text="_File">
+                <MenuItem fx:id="menuItemNew" onAction="#clearClicked" text="_New">
+                    <accelerator>
+                        <KeyCodeCombination alt="UP" code="N" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>
+                    </accelerator>
+                </MenuItem>
                 <MenuItem fx:id="menuItemGeneratePhp" onAction="#generatePhpCode" text="_Generate PHP">
                     <accelerator>
                         <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP"/>

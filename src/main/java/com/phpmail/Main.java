@@ -18,8 +18,9 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws MalformedURLException {
 
+        primaryStage.setOnCloseRequest(event -> new UiController().closeClicked());
         primaryStage.setTitle("PHP Mail Code Generator");
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Main.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Ui.fxml"));
         try {
             BorderPane borderPane = fxmlLoader.load();
             Scene scene = new Scene(borderPane);
