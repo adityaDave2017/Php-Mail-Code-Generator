@@ -7,6 +7,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -20,8 +21,7 @@ public class UiController {
 
     @FXML
     public Button btnAddField;
-    @FXML
-    public MenuItem menuItemNew;
+
     @FXML
     private TextField txtFieldEmailTo;
     @FXML
@@ -41,25 +41,27 @@ public class UiController {
     @FXML
     private TextField txtFieldSelectTemplate;
     @FXML
-    private ListView<Field> lvFields;
-    @FXML
     private TextField txtFieldDisplayName;
     @FXML
     private TextField txtFieldFormFieldName;
     @FXML
+    private MenuItem menuItemNew;
+    @FXML
     private MenuItem menuItemGeneratePhp;
-
     @FXML
     private MenuItem menuItemClose;
-
     @FXML
     private MenuItem menuItemAbout;
-
     @FXML
     private Button btnClear;
-
     @FXML
     private VBox vBoxContainer;
+    @FXML
+    private TableView<Field> tableFields;
+    @FXML
+    private TableColumn<Field, String> tableColDisplayName;
+    @FXML
+    private TableColumn<Field, String> tableColFormFieldName;
 
 
     private File templateFile;
@@ -72,7 +74,8 @@ public class UiController {
             (txtFieldDisplayName.getScene()).getRoot().requestFocus();
             Stage primaryStage = (Stage) txtFieldSelectTemplate.getScene().getWindow();
             primaryStage.setOnCloseRequest(event -> {
-                boolean trouble = false;
+                boolean trouble = tableFields.getItems().size() != 0;
+
                 for (Node node : vBoxContainer.getChildren()) {
                     if (node instanceof TextField && !((TextField) node).getText().isEmpty()) {
                         node.setStyle("-fx-border-color: red");
@@ -84,7 +87,7 @@ public class UiController {
                 alert.setHeaderText(null);
                 alert.getButtonTypes().clear();
                 alert.getButtonTypes().setAll(ButtonType.NO, ButtonType.YES);
-                if (lvFields.getItems().size() != 0 || trouble) {
+                if (tableFields.getItems().size() != 0 || trouble) {
                     alert.setContentText("Do you want to save before exit?");
                     Optional<ButtonType> result = alert.showAndWait();
                     if (result.isPresent() && result.get() == ButtonType.YES) {
@@ -151,6 +154,15 @@ public class UiController {
             }
         });
 
+        tableColDisplayName.prefWidthProperty().bind(tableFields.widthProperty().divide(2).subtract(2));
+        tableColDisplayName.setCellFactory(param -> new EditingCell());
+        tableColDisplayName.setCellValueFactory(new PropertyValueFactory<>("displayName"));
+        tableColDisplayName.setOnEditCommit(event -> event.getTableView().getItems().get(event.getTablePosition().getRow()).setDisplayName(event.getNewValue()));
+
+        tableColFormFieldName.prefWidthProperty().bind(tableFields.widthProperty().divide(2));
+        tableColFormFieldName.setCellFactory(param -> new EditingCell());
+        tableColFormFieldName.setCellValueFactory(new PropertyValueFactory<>("formFieldName"));
+        tableColFormFieldName.setOnEditCommit(event -> event.getTableView().getItems().get(event.getTablePosition().getRow()).setFormFieldName(event.getNewValue()));
     }
 
 
@@ -176,7 +188,7 @@ public class UiController {
         newField.setDisplayName(txtFieldDisplayName.getText());
         newField.setFormFieldName(txtFieldFormFieldName.getText());
 
-        ObservableList<Field> observableList = lvFields.getItems();
+        ObservableList<Field> observableList = tableFields.getItems();
         for (Field field : observableList) {
             if (field.compareTo(newField) == 0) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -189,7 +201,7 @@ public class UiController {
             }
         }
 
-        lvFields.getItems().add(newField);
+        tableFields.getItems().add(newField);
         txtFieldDisplayName.clear();
         txtFieldFormFieldName.clear();
     }
@@ -198,28 +210,30 @@ public class UiController {
     @FXML
     public boolean generatePhpCode() throws InterruptedException {
 
-        if (lvFields.getItems().size() == 0) {
+        if (tableFields.getItems().size() == 0) {
+            System.out.println("table fields");
             return false;
         }
 
         for (Node node : vBoxContainer.getChildren()) {
             if (node instanceof TextField && ((TextField) node).getText().isEmpty()) {
                 node.setStyle("-fx-border-color: red");
+                System.out.println(node.getId());
                 return false;
             }
         }
 
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save File");
+        FileChooser.ExtensionFilter extensionFilter = new FileChooser.ExtensionFilter("PHP files (*.php)", "*.php");
+        fileChooser.getExtensionFilters().add(extensionFilter);
+        final File[] saveFile = {fileChooser.showSaveDialog(null)};
         Thread saver = new Thread(() -> {
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Save File");
-            FileChooser.ExtensionFilter extensionFilter = new FileChooser.ExtensionFilter("PHP files (*.php)", "*.php");
-            fileChooser.getExtensionFilters().add(extensionFilter);
-            File saveFile = fileChooser.showSaveDialog(null);
 
-            if (saveFile != null) {
+            if (saveFile[0] != null) {
 
-                if (!saveFile.getName().endsWith(".php")) {
-                    saveFile = new File(saveFile.getAbsolutePath() + ".php");
+                if (!saveFile[0].getName().endsWith(".php")) {
+                    saveFile[0] = new File(saveFile[0].getAbsolutePath() + ".php");
                 }
 
                 EmailData data = new EmailData();
@@ -232,10 +246,11 @@ public class UiController {
                 data.setSuccessUrl(txtFieldSuccessUrl.getText());
                 data.setFailureUrl(txtFieldFailureUrl.getText());
 
-                Save.generatePhp(templateFile, saveFile, data, lvFields.getItems());
+                Save.generatePhp(templateFile, saveFile[0], data, tableFields.getItems());
             }
         });
 
+        saver.start();
         saver.join();
         return true;
     }
@@ -254,7 +269,7 @@ public class UiController {
 
     @FXML
     public void closeClicked() {
-        boolean trouble = false;
+        boolean trouble = tableFields.getItems().size() != 0;
         for (Node node : vBoxContainer.getChildren()) {
             if (node instanceof TextField && !((TextField) node).getText().isEmpty()) {
                 node.setStyle("-fx-border-color: red");
@@ -266,7 +281,7 @@ public class UiController {
         alert.setHeaderText(null);
         alert.getButtonTypes().clear();
         alert.getButtonTypes().setAll(ButtonType.NO, ButtonType.YES);
-        if (lvFields.getItems().size() != 0 || trouble) {
+        if (tableFields.getItems().size() != 0 || trouble) {
             alert.setContentText("Do you want to save before exit?");
             Optional<ButtonType> result = alert.showAndWait();
             if (result.isPresent() && result.get() == ButtonType.YES) {
@@ -281,7 +296,7 @@ public class UiController {
                     exc.printStackTrace();
                 }
             }
-            lvFields.getItems().clear();
+            tableFields.getItems().clear();
             Platform.exit();
         } else {
             alert.setContentText("Do you really want to exit?");
@@ -303,7 +318,7 @@ public class UiController {
             }
         }
 
-        if (lvFields.getItems().size() != 0 || trouble) {
+        if (tableFields.getItems().size() != 0 || trouble) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Warning");
             alert.setHeaderText(null);
@@ -337,7 +352,7 @@ public class UiController {
         txtFieldLogoUrl.clear();
         txtFieldSuccessUrl.clear();
         txtFieldSelectTemplate.clear();
-        lvFields.getItems().clear();
+        tableFields.getItems().clear();
     }
 
 

@@ -1,53 +1,74 @@
 package com.phpmail.pojo;
 
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
 import org.jetbrains.annotations.NotNull;
 
 
 public class Field implements Comparable<Field> {
 
-    private String formFieldName;
-    private String displayName;
-    private boolean isOptional;
+    private SimpleStringProperty displayName;
+    private SimpleStringProperty formFieldName;
+    private SimpleBooleanProperty isOptional;
 
-    public String getFormFieldName() {
-        return formFieldName;
-    }
-
-    public void setFormFieldName(String formFieldName) {
-        this.formFieldName = formFieldName;
+    public Field() {
+        displayName = new SimpleStringProperty();
+        formFieldName = new SimpleStringProperty();
+        isOptional = new SimpleBooleanProperty();
     }
 
     public String getDisplayName() {
-        return displayName;
+        return displayName.get();
     }
 
     public void setDisplayName(String displayName) {
-        this.displayName = displayName;
+        this.displayName.set(displayName);
     }
 
-    public boolean isOptional() {
+    public SimpleStringProperty displayNameProperty() {
+        return displayName;
+    }
+
+    public String getFormFieldName() {
+        return formFieldName.get();
+    }
+
+    public void setFormFieldName(String formFieldName) {
+        this.formFieldName.set(formFieldName);
+    }
+
+    public SimpleStringProperty formFieldNameProperty() {
+        return formFieldName;
+    }
+
+    public boolean isIsOptional() {
+        return isOptional.get();
+    }
+
+    public void setIsOptional(boolean isOptional) {
+        this.isOptional.set(isOptional);
+    }
+
+    public SimpleBooleanProperty isOptionalProperty() {
         return isOptional;
     }
 
-    public void setOptional(boolean optional) {
-        isOptional = optional;
-    }
-
     public String toPhpVariable() {
-        return "$" + formFieldName + " = $_REQUEST['" + formFieldName + "'];";
+        return "$" + getFormFieldName() + " = $_REQUEST['" + getFormFieldName() + "'];";
     }
 
     @Override
     public String toString() {
         return "Field{" +
-                "formFieldName='" + formFieldName + '\'' +
-                ", displayName='" + displayName + '\'' +
+                "displayName=" + displayName +
+                ", formFieldName=" + formFieldName +
                 ", isOptional=" + isOptional +
                 '}';
     }
 
     @Override
     public int compareTo(@NotNull Field o) {
-        return this.formFieldName.compareTo(o.formFieldName);
+        return this.formFieldName.getValue().compareTo(o.formFieldName.getValue());
     }
+
 }
