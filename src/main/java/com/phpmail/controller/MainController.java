@@ -106,6 +106,12 @@ public class MainController {
                         } catch (InterruptedException exc) {
                             exc.printStackTrace();
                         }
+                    } else {
+                        alert.setContentText("Do you really want to exit?");
+                        Optional<ButtonType> result1 = alert.showAndWait();
+                        if (result1.isPresent() && result1.get() == ButtonType.NO) {
+                            event.consume();
+                        }
                     }
                 } else {
                     alert.setContentText("Do you really want to exit?");
@@ -264,16 +270,16 @@ public class MainController {
             FileChooser.ExtensionFilter extensionFilter = new FileChooser.ExtensionFilter("PHP files (*.php)", "*.php");
             fileChooser.getExtensionFilters().add(extensionFilter);
             saveFile = fileChooser.showSaveDialog(null);
+
+            if (!saveFile.getName().endsWith(".php")) {
+                saveFile = new File(saveFile.getAbsolutePath() + ".php");
+                ((Stage) txtFieldDisplayName.getScene().getWindow()).setTitle(((Stage) txtFieldDisplayName.getScene().getWindow()).getTitle() + " - " + saveFile.getAbsolutePath());
+            }
         }
 
         Thread saver = new Thread(() -> {
 
             if (saveFile != null) {
-
-                if (!saveFile.getName().endsWith(".php")) {
-                    saveFile = new File(saveFile.getAbsolutePath() + ".php");
-                }
-
                 EmailData data = new EmailData();
                 data.setEmailTo(txtFieldEmailTo.getText());
                 data.setEmailSubject(txtFieldEmailSubject.getText());

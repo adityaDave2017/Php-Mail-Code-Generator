@@ -134,14 +134,15 @@ public class NewTemplateController {
             FileChooser.ExtensionFilter extensionFilter = new FileChooser.ExtensionFilter("Template file (*.json)", "*.json");
             saveFileChooser.getExtensionFilters().add(extensionFilter);
             saveFile = saveFileChooser.showSaveDialog(null);
-        }
-
-        Thread thread = new Thread(() -> {
 
             if (!saveFile.getName().endsWith(".json")) {
                 saveFile = new File(saveFile.getAbsolutePath() + ".json");
+                ((Stage) textAreaHead.getScene().getWindow()).setTitle(textAreaHead.getScene().getWindow() + " - " + saveFile.getAbsolutePath());
             }
 
+        }
+
+        Thread thread = new Thread(() -> {
             Save.saveTemplate(saveFile, formatTemplate);
             isUnsaved = false;
         });
