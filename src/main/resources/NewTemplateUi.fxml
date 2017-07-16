@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:id="vBoxContainer" alignment="CENTER" prefHeight="500.0" spacing="10"
+      maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity"
+      prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.131"
+      fx:controller="com.phpmail.controller.NewTemplateController">
+    <padding>
+        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+    </padding>
+    <TextArea fx:id="textAreaHead" prefHeight="150.0" promptText="Head HTML..." wrapText="true"/>
+    <TextArea fx:id="textAreaBody" prefHeight="150.0"
+              promptText="Body HTML... should contain `$$DISPLAY_NAME` and `$$FIELD_VAR_NAME$$` strings"
+              wrapText="true"/>
+    <TextArea fx:id="textAreaTail" prefHeight="150.0" promptText="End HTML..." wrapText="true"/>
+    <TextArea fx:id="textAreaHeaders" prefHeight="150.0" promptText="Headers for mail function..." wrapText="true"/>
+    <TextArea fx:id="textAreaMailCode" prefHeight="150.0" promptText="PHP mail function..." wrapText="true"/>
+    <HBox alignment="CENTER_RIGHT" spacing="20.0">
+        <Button fx:id="btnClear" contentDisplay="CENTER" mnemonicParsing="false" onAction="#clearClicked" text="Clear">
+            <padding>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+            </padding>
+        </Button>
+        <Button fx:id="btnSave" mnemonicParsing="false" onAction="#saveClicked" text="Save">
+            <padding>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+            </padding>
+        </Button>
+    </HBox>
+</VBox>

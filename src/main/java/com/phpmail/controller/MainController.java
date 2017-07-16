@@ -1,8 +1,12 @@
-package com.phpmail;
+package com.phpmail.controller;
 
+import com.phpmail.custom.EditingCell;
+import com.phpmail.custom.NewTemplateDialog;
 import com.phpmail.pojo.EmailData;
 import com.phpmail.pojo.Field;
+import com.phpmail.utils.Save;
 import javafx.application.Platform;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -13,15 +17,17 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Optional;
 
 
 @SuppressWarnings({"unused", "Duplicates"})
-public class UiController {
+public class MainController {
 
+    private static boolean isUnsaved = true;
+    private static File saveFile = null;
     @FXML
     public Button btnAddField;
-
     @FXML
     private TextField txtFieldEmailTo;
     @FXML
@@ -45,7 +51,9 @@ public class UiController {
     @FXML
     private TextField txtFieldFormFieldName;
     @FXML
-    private MenuItem menuItemNew;
+    private MenuItem menuItemNewMailCode;
+    @FXML
+    private MenuItem menuItemNewTemplate;
     @FXML
     private MenuItem menuItemGeneratePhp;
     @FXML
@@ -62,16 +70,13 @@ public class UiController {
     private TableColumn<Field, String> tableColDisplayName;
     @FXML
     private TableColumn<Field, String> tableColFormFieldName;
-
-
-    private File templateFile;
-
+    private File templateFile = null;
 
     @FXML
     public void initialize() {
 
         Platform.runLater(() -> {
-            (txtFieldDisplayName.getScene()).getRoot().requestFocus();
+            txtFieldDisplayName.getScene().getRoot().requestFocus();
             Stage primaryStage = (Stage) txtFieldSelectTemplate.getScene().getWindow();
             primaryStage.setOnCloseRequest(event -> {
                 boolean trouble = tableFields.getItems().size() != 0;
@@ -112,23 +117,48 @@ public class UiController {
             });
         });
 
-        txtFieldDisplayName.textProperty().addListener((observable, oldValue, newValue) -> txtFieldDisplayName.setStyle(null));
+        txtFieldDisplayName.textProperty().addListener((observable, oldValue, newValue) -> {
+            isUnsaved = true;
+            txtFieldDisplayName.setStyle(null);
+        });
 
-        txtFieldFormFieldName.textProperty().addListener((observable, oldValue, newValue) -> txtFieldFormFieldName.setStyle(null));
+        txtFieldFormFieldName.textProperty().addListener((observable, oldValue, newValue) -> {
+            isUnsaved = true;
+            txtFieldFormFieldName.setStyle(null);
+        });
 
-        txtFieldLogoUrl.textProperty().addListener(((observable, oldValue, newValue) -> txtFieldLogoUrl.setStyle(null)));
+        txtFieldLogoUrl.textProperty().addListener(((observable, oldValue, newValue) -> {
+            isUnsaved = true;
+            txtFieldLogoUrl.setStyle(null);
+        }));
 
-        txtFieldSuccessUrl.textProperty().addListener((observable, oldValue, newValue) -> txtFieldSuccessUrl.setStyle(null));
+        txtFieldSuccessUrl.textProperty().addListener((observable, oldValue, newValue) -> {
+            isUnsaved = true;
+            txtFieldSuccessUrl.setStyle(null);
+        });
 
-        txtFieldHomePage.textProperty().addListener((observable, oldValue, newValue) -> txtFieldHomePage.setStyle(null));
+        txtFieldHomePage.textProperty().addListener((observable, oldValue, newValue) -> {
+            isUnsaved = true;
+            txtFieldHomePage.setStyle(null);
+        });
 
-        txtFieldGreetings.textProperty().addListener((observable, oldValue, newValue) -> txtFieldGreetings.setStyle(null));
+        txtFieldGreetings.textProperty().addListener((observable, oldValue, newValue) -> {
+            isUnsaved = true;
+            txtFieldGreetings.setStyle(null);
+        });
 
-        txtFieldFromText.textProperty().addListener((observable, oldValue, newValue) -> txtFieldFromText.setStyle(null));
+        txtFieldFromText.textProperty().addListener((observable, oldValue, newValue) -> {
+            isUnsaved = true;
+            txtFieldFromText.setStyle(null);
+        });
 
-        txtFieldFailureUrl.textProperty().addListener((observable, oldValue, newValue) -> txtFieldFailureUrl.setStyle(null));
+        txtFieldFailureUrl.textProperty().addListener((observable, oldValue, newValue) -> {
+            isUnsaved = true;
+            txtFieldFailureUrl.setStyle(null);
+        });
 
         txtFieldEmailTo.textProperty().addListener((observable, oldValue, newValue) -> {
+            isUnsaved = true;
             if (!newValue.isEmpty()) {
                 for (String emailId : newValue.split(",")) {
                     if (!emailId.matches("[\\w.\\d]+@(\\w)+\\.(\\w)+")) {
@@ -143,7 +173,10 @@ public class UiController {
             }
         });
 
-        txtFieldEmailSubject.textProperty().addListener((observable, oldValue, newValue) -> txtFieldEmailSubject.setStyle(null));
+        txtFieldEmailSubject.textProperty().addListener((observable, oldValue, newValue) -> {
+            isUnsaved = true;
+            txtFieldEmailSubject.setStyle(null);
+        });
 
         txtFieldSelectTemplate.textProperty().addListener((observable, oldValue, newValue) -> txtFieldSelectTemplate.setStyle(null));
 
@@ -163,6 +196,8 @@ public class UiController {
         tableColFormFieldName.setCellFactory(param -> new EditingCell());
         tableColFormFieldName.setCellValueFactory(new PropertyValueFactory<>("formFieldName"));
         tableColFormFieldName.setOnEditCommit(event -> event.getTableView().getItems().get(event.getTablePosition().getRow()).setFormFieldName(event.getNewValue()));
+
+        tableFields.getItems().addListener((ListChangeListener<Field>) c -> isUnsaved = true);
     }
 
 
@@ -223,17 +258,20 @@ public class UiController {
             }
         }
 
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save File");
-        FileChooser.ExtensionFilter extensionFilter = new FileChooser.ExtensionFilter("PHP files (*.php)", "*.php");
-        fileChooser.getExtensionFilters().add(extensionFilter);
-        final File[] saveFile = {fileChooser.showSaveDialog(null)};
+        if (saveFile == null) {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save File");
+            FileChooser.ExtensionFilter extensionFilter = new FileChooser.ExtensionFilter("PHP files (*.php)", "*.php");
+            fileChooser.getExtensionFilters().add(extensionFilter);
+            saveFile = fileChooser.showSaveDialog(null);
+        }
+
         Thread saver = new Thread(() -> {
 
-            if (saveFile[0] != null) {
+            if (saveFile != null) {
 
-                if (!saveFile[0].getName().endsWith(".php")) {
-                    saveFile[0] = new File(saveFile[0].getAbsolutePath() + ".php");
+                if (!saveFile.getName().endsWith(".php")) {
+                    saveFile = new File(saveFile.getAbsolutePath() + ".php");
                 }
 
                 EmailData data = new EmailData();
@@ -246,7 +284,8 @@ public class UiController {
                 data.setSuccessUrl(txtFieldSuccessUrl.getText());
                 data.setFailureUrl(txtFieldFailureUrl.getText());
 
-                Save.generatePhp(templateFile, saveFile[0], data, tableFields.getItems());
+                Save.generatePhp(templateFile, saveFile, data, tableFields.getItems());
+                isUnsaved = false;
             }
         });
 
@@ -368,5 +407,15 @@ public class UiController {
         }
     }
 
+
+    @FXML
+    void createNewTemplate() {
+        try {
+            NewTemplateDialog newTemplateDialog = new NewTemplateDialog();
+            newTemplateDialog.showAndWait();
+        } catch (IOException exc) {
+            exc.printStackTrace();
+        }
+    }
 
 }

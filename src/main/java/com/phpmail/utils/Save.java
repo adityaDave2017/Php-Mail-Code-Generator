@@ -1,4 +1,4 @@
-package com.phpmail;
+package com.phpmail.utils;
 
 import com.google.gson.Gson;
 import com.phpmail.pojo.EmailData;
@@ -9,7 +9,7 @@ import javafx.collections.ObservableList;
 import java.io.*;
 
 
-class Save {
+public class Save {
 
 
     private static FormatTemplate loadTemplate(File location) throws IOException {
@@ -17,7 +17,7 @@ class Save {
     }
 
 
-    static boolean generatePhp(File templateFile, File saveFile, EmailData data, ObservableList<Field> fields) {
+    public static boolean generatePhp(File templateFile, File saveFile, EmailData data, ObservableList<Field> fields) {
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(saveFile))) {
             bufferedWriter.write("<?php\n\n");
 
@@ -61,10 +61,8 @@ class Save {
 
             bufferedWriter.write(template.getTail());
 
-            String headers = template.getHeaders();
-            headers = headers.replace("$$FROM$$", data.getFromText());
-            headers = headers.replace("$$EMAIL_TO$$", data.getEmailTo());
-            bufferedWriter.write(headers);
+            bufferedWriter.write("\n\n");
+            bufferedWriter.write(template.getHeaders());
 
             bufferedWriter.write("\n\n");
             bufferedWriter.write(template.getMailCode());
@@ -75,6 +73,15 @@ class Save {
             exc.printStackTrace();
         }
         return false;
+    }
+
+
+    public static void saveTemplate(File saveFile, FormatTemplate formatTemplate) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(saveFile))) {
+            writer.write(new Gson().toJson(formatTemplate, FormatTemplate.class));
+        } catch (IOException exc) {
+            exc.printStackTrace();
+        }
     }
 
 }

@@ -1,5 +1,6 @@
 package com.phpmail;
 
+import com.phpmail.controller.MainController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -18,9 +19,9 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws MalformedURLException {
 
-        primaryStage.setOnCloseRequest(event -> new UiController().closeClicked());
+        primaryStage.setOnCloseRequest(event -> new MainController().closeClicked());
         primaryStage.setTitle("PHP Mail Code Generator");
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/Ui.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/MainUi.fxml"));
         try {
             BorderPane borderPane = fxmlLoader.load();
             Scene scene = new Scene(borderPane);

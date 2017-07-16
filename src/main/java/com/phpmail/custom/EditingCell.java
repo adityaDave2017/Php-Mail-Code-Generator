@@ -1,4 +1,4 @@
-package com.phpmail;
+package com.phpmail.custom;
 
 
 import com.phpmail.pojo.Field;
@@ -7,7 +7,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 
-class EditingCell extends TableCell<Field, String> {
+public class EditingCell extends TableCell<Field, String> {
 
     private TextField textField;
 
